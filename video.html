@@ -27,7 +27,7 @@ function embed(v){if(v.platform==='TikTok')return `<iframe src="https://www.tikt
  <h2>Views over time</h2><div class="card">${spark(v.hist)}</div>
  <h2>Preview</h2><details><summary>Show the post preview (loads from ${esc(v.platform)})</summary><div class="embed" id="emb"></div></details>
  <h2>Details</h2><div class="card"><dl><dt>Platform</dt><dd>${esc(v.platform)}</dd><dt>Posted</dt><dd>${esc(v.posted)}</dd><dt>Link</dt><dd><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url)}</a></dd><dt>Last collected</dt><dd>${esc(v.collected)} from the ${esc(v.source)}</dd><dt>Verification</dt><dd>Public figures read from the page; not checked against the creator's own analytics</dd>${v.note?`<dt>Note</dt><dd>${esc(v.note)}</dd>`:''}</dl></div>
- <h2>How these numbers are worked out</h2><div class="card"><p><b>Engagement rate</b> = (likes + comments + shares) &divide; views &times; 100. Saves are shown but not included. N/A when views or any of the three counts are not public.</p><p><b>N/A</b> means the platform does not show that number publicly. It is not zero. <b>Unique reach</b> is only known from the creator's own analytics.</p><p>Views show plays. They do not prove registrations, leads or attendance.</p></div>`;
+ <p class="na" style="margin-top:18px;font-size:13px">Engagement rate = (likes + comments + shares) &divide; views. N/A = not shown publicly.</p>`;
  document.querySelector('details').addEventListener('toggle',e=>{if(e.target.open&&!document.getElementById('emb').innerHTML)document.getElementById('emb').innerHTML=embed(v)});
  document.getElementById('cp').onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(v.url);document.getElementById('cp').textContent='Copied'}})();
 </script></body></html>
