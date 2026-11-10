@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Influencer Impact Dashboard</title><link rel="stylesheet" href="style.css"></head><body><div class="wrap">
+<h1>Influencer Reach &amp; Impact</h1>
+<p class="sub">Manchester scholarship event &middot; public figures last collected <span id="upd"></span></p>
+<div class="note"><b>Read this first.</b> Views are each platform's own play count and cannot be added up as one audience. <b>N/A</b> means the platform does not show that number publicly (it is not zero). Facebook and Instagram show no public view counts. No payment or cost information is shown.</div>
+<div class="filters"><select id="fi"><option value="">All influencers</option></select><select id="fp"><option value="">All platforms</option><option>TikTok</option><option>Facebook</option><option>Instagram</option></select></div>
+<div class="kpis" id="kpis"></div>
+<details><summary>How is impact measured?</summary>
+<p><b>What we can measure now (public data):</b></p><ul>
+<li><b>Reach delivered</b>: total plays on each video (views). A play count, not unique people.</li>
+<li><b>Engagement</b>: (likes + comments + shares) &divide; views. Shows how many viewers reacted.</li>
+<li><b>Spread</b>: shares and saves. Shares push the message to new people; saves show intent to come back to it.</li>
+<li><b>Delivery vs plan</b>: videos posted versus videos reported by each influencer.</li>
+<li><b>Growth</b>: each refresh adds a snapshot, so a video page shows how views grow over time.</li></ul>
+<p><b>What we cannot measure from public data:</b> unique reach, audience location, registrations, ticket scans or attendance. To link views to registrations, give each influencer their own sign-up link, QR code or promo code and count sign-ups per code.</p></details>
+<h2>Views per video</h2><div class="card bars" id="bars"></div>
+<h2>Influencers</h2><div class="tw"><table id="inf"></table></div>
+<h2>Videos</h2><div class="vgrid" id="vids"></div>
+</div>
+<script src="data/embedded.js"></script><script>
+const U=window.UPDATED||'';
+function parseCSV(t){const r=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);r.push(row);row=[];f=''}else f+=c}if(f!==''||row.length){row.push(f);r.push(row)}const h=r.shift();return r.filter(x=>x.length>1).map(x=>Object.fromEntries(h.map((k,i)=>[k,x[i]])))}
+async function load(n){try{const r=await fetch('data/'+n+'.csv?'+Date.now());if(!r.ok)throw 0;return parseCSV(await r.text())}catch(e){return parseCSV(window.EMBEDDED[n])}}
+const num=x=>x===''||x==null?null:Number(x);
+const f=x=>x==null?'<span class="na">N/A</span>':x.toLocaleString('en-GB');
+const p=x=>x==null?'<span class="na">N/A</span>':x.toFixed(2)+'%';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function model(){const [vs,hs,is]=await Promise.all([load('videos'),load('history'),load('influencers')]);
+ const by={};hs.forEach(h=>{(by[h.slug]=by[h.slug]||[]).push(h)});
+ vs.forEach(v=>{const hist=(by[v.slug]||[]).sort((a,b)=>a.collected_at<b.collected_at?-1:1);v.hist=hist;const l=hist[hist.length-1]||{};
+  ['views','likes','comments','shares','saves','reach'].forEach(k=>v[k]=num(l[k]));v.collected=l.collected_at||'';
+  v.eng=(v.views&&v.likes!=null&&v.comments!=null&&v.shares!=null)?100*(v.likes+v.comments+v.shares)/v.views:null});
+ is.forEach(i=>{i.followers=num(i.followers);i.reported=num(i.reported_videos)});return{vs,is}}
+
+let M;const $=s=>document.querySelector(s);
+function sel(){return M.vs.filter(v=>(!$('#fi').value||v.influencer===$('#fi').value)&&(!$('#fp').value||v.platform===$('#fp').value))}
+function tot(vs){const s=k=>{const a=vs.filter(v=>v[k]!=null);return a.length?a.reduce((t,v)=>t+v[k],0):null};const el=vs.filter(v=>v.eng!=null);const iv=el.reduce((t,v)=>t+v.views,0),ii=el.reduce((t,v)=>t+v.likes+v.comments+v.shares,0);return{n:vs.length,views:s('views'),likes:s('likes'),comments:s('comments'),shares:s('shares'),saves:s('saves'),eng:iv?100*ii/iv:null,elig:el.length}}
+function render(){const vs=sel(),t=tot(vs);
+ $('#kpis').innerHTML=[['Videos tracked',t.n],['Recorded views',t.views],['Likes',t.likes],['Comments',t.comments],['Shares',t.shares],['Saves',t.saves]].map(([l,x])=>`<div class="kpi"><b>${f(x)}</b><span>${l}</span></div>`).join('')+`<div class="kpi"><b>${p(t.eng)}</b><span>Engagement rate (${t.elig} videos with full counts)</span></div>`;
+ const wv=vs.filter(v=>v.views!=null).sort((a,b)=>b.views-a.views),mx=wv[0]?wv[0].views:1;
+ $('#bars').innerHTML=wv.length?wv.map(v=>`<div class="row"><a href="video.html?id=${v.slug}">${esc(v.influencer.split(' (')[0])}: ${esc(v.caption.slice(0,44))}${v.caption.length>44?'…':''}</a><div class="track"><div class="fill" style="width:${Math.max(1,100*v.views/mx)}%"></div></div><b>${v.views.toLocaleString('en-GB')}</b></div>`).join(''):'<span class="na">No videos with a view count in this selection.</span>';
+ $('#inf').innerHTML='<tr><th>Influencer</th><th>Main channel</th><th class="n">Followers</th><th class="n">Reported</th><th class="n">Tracked</th><th class="n">Views</th><th class="n">Engagement</th><th>Link</th></tr>'+M.is.filter(i=>!$('#fi').value||i.name===$('#fi').value).map(i=>{const x=tot(vs.filter(v=>v.influencer===i.name));return `<tr><td><b>${esc(i.name)}</b><br><span class="na">${esc(i.group)}${i.outlet?' · '+esc(i.outlet):''}</span></td><td>${esc(i.platform)}${i.handle?'<br><span class="na">'+esc(i.handle)+'</span>':''}</td><td class="n">${f(i.followers)}</td><td class="n">${f(i.reported)}</td><td class="n">${x.n}</td><td class="n">${f(x.views)}</td><td class="n">${p(x.eng)}</td><td><a href="${esc(i.profile_url)}" target="_blank" rel="noopener">Profile</a></td></tr>`}).join('');
+ $('#vids').innerHTML=vs.map(v=>`<div class="vc"><h3><a href="video.html?id=${v.slug}">${esc(v.caption)}</a></h3><div class="meta">${esc(v.influencer)} &middot; ${esc(v.platform)} &middot; ${esc(v.posted)}</div><div class="stats"><div><b>${f(v.views)}</b><span>Views</span></div><div><b>${f(v.likes)}</b><span>Likes</span></div><div><b>${f(v.comments)}</b><span>Comments</span></div><div><b>${f(v.shares)}</b><span>Shares</span></div></div><div class="btns"><a class="btn" href="video.html?id=${v.slug}">Details</a><a class="btn ghost" href="${esc(v.url)}" target="_blank" rel="noopener">Open post</a></div></div>`).join('')}
+(async()=>{M=await model();$('#upd').textContent=window.UPDATED||'';M.is.forEach(i=>{const o=document.createElement('option');o.textContent=i.name;$('#fi').appendChild(o)});['fi','fp'].forEach(id=>$('#'+id).addEventListener('change',render));render()})();
+</script></body></html>

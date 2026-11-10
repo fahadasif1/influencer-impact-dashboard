@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Video details</title><link rel="stylesheet" href="style.css"></head><body><div class="wrap">
+<p><a href="index.html">&larr; Back to dashboard</a></p><div id="page"><p class="na">Loading…</p></div></div>
+<script src="data/embedded.js"></script><script>
+const U=window.UPDATED||'';
+function parseCSV(t){const r=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);r.push(row);row=[];f=''}else f+=c}if(f!==''||row.length){row.push(f);r.push(row)}const h=r.shift();return r.filter(x=>x.length>1).map(x=>Object.fromEntries(h.map((k,i)=>[k,x[i]])))}
+async function load(n){try{const r=await fetch('data/'+n+'.csv?'+Date.now());if(!r.ok)throw 0;return parseCSV(await r.text())}catch(e){return parseCSV(window.EMBEDDED[n])}}
+const num=x=>x===''||x==null?null:Number(x);
+const f=x=>x==null?'<span class="na">N/A</span>':x.toLocaleString('en-GB');
+const p=x=>x==null?'<span class="na">N/A</span>':x.toFixed(2)+'%';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function model(){const [vs,hs,is]=await Promise.all([load('videos'),load('history'),load('influencers')]);
+ const by={};hs.forEach(h=>{(by[h.slug]=by[h.slug]||[]).push(h)});
+ vs.forEach(v=>{const hist=(by[v.slug]||[]).sort((a,b)=>a.collected_at<b.collected_at?-1:1);v.hist=hist;const l=hist[hist.length-1]||{};
+  ['views','likes','comments','shares','saves','reach'].forEach(k=>v[k]=num(l[k]));v.collected=l.collected_at||'';
+  v.eng=(v.views&&v.likes!=null&&v.comments!=null&&v.shares!=null)?100*(v.likes+v.comments+v.shares)/v.views:null});
+ is.forEach(i=>{i.followers=num(i.followers);i.reported=num(i.reported_videos)});return{vs,is}}
+
+function spark(h){const pts=h.filter(x=>num(x.views)!=null);if(pts.length<2)return '<p class="na">Growth chart appears once this video has been checked at least twice.</p>';const v=pts.map(x=>num(x.views)),mn=Math.min(...v),mx=Math.max(...v),W=300,H=50;const c=v.map((y,i)=>`${(i/(v.length-1))*W},${H-(mx==mn?H/2:((y-mn)/(mx-mn))*(H-6))-3}`).join(' ');return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline fill="none" stroke="var(--bar)" stroke-width="2" points="${c}"/></svg><p class="na">${esc(pts[0].collected_at)}: ${v[0].toLocaleString('en-GB')} &rarr; ${esc(pts[pts.length-1].collected_at)}: ${v[v.length-1].toLocaleString('en-GB')} views</p>`}
+function embed(v){if(v.platform==='TikTok')return `<iframe src="https://www.tiktok.com/embed/v2/${esc(v.post_id)}" width="325" height="580" allowfullscreen loading="lazy"></iframe>`;if(v.platform==='Facebook')return `<iframe src="https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(v.url)}&show_text=false&width=360" width="360" height="640" allowfullscreen loading="lazy"></iframe>`;if(v.platform==='Instagram')return `<iframe src="${esc(v.url.replace(/\/?$/,'/'))}embed" width="360" height="640" loading="lazy"></iframe>`;return ''}
+(async()=>{const M=await model();const id=new URLSearchParams(location.search).get('id');const v=M.vs.find(x=>x.slug===id);if(!v){document.getElementById('page').innerHTML='<p>Video not found.</p>';return}
+ document.title=v.influencer+' - '+v.platform+' video';
+ const cell=(l,x)=>`<div class="kpi"><b>${f(x)}</b><span>${l}</span></div>`;
+ document.getElementById('page').innerHTML=`<h1>${esc(v.caption)}</h1><p class="sub">${esc(v.influencer)} &middot; ${esc(v.platform)} &middot; <span class="tag ok">Confirmed by staff</span></p>
+ <div class="btns"><a class="btn" href="${esc(v.url)}" target="_blank" rel="noopener">Open post on ${esc(v.platform)}</a><button class="btn ghost" id="cp">Copy link</button></div>
+ <div class="grid">${cell('Views',v.views)}${cell('Likes',v.likes)}${cell('Comments',v.comments)}${cell('Shares',v.shares)}${cell('Saves',v.saves)}${cell('Unique reach',v.reach)}<div class="kpi"><b>${p(v.eng)}</b><span>Engagement rate</span></div></div>
+ <h2>Views over time</h2><div class="card">${spark(v.hist)}</div>
+ <h2>Preview</h2><details><summary>Show the post preview (loads from ${esc(v.platform)})</summary><div class="embed" id="emb"></div></details>
+ <h2>Details</h2><div class="card"><dl><dt>Platform</dt><dd>${esc(v.platform)}</dd><dt>Posted</dt><dd>${esc(v.posted)}</dd><dt>Link</dt><dd><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url)}</a></dd><dt>Last collected</dt><dd>${esc(v.collected)} from the ${esc(v.source)}</dd><dt>Verification</dt><dd>Public figures read from the page; not checked against the creator's own analytics</dd>${v.note?`<dt>Note</dt><dd>${esc(v.note)}</dd>`:''}</dl></div>
+ <h2>How these numbers are worked out</h2><div class="card"><p><b>Engagement rate</b> = (likes + comments + shares) &divide; views &times; 100. Saves are shown but not included. N/A when views or any of the three counts are not public.</p><p><b>N/A</b> means the platform does not show that number publicly. It is not zero. <b>Unique reach</b> is only known from the creator's own analytics.</p><p>Views show plays. They do not prove registrations, leads or attendance.</p></div>`;
+ document.querySelector('details').addEventListener('toggle',e=>{if(e.target.open&&!document.getElementById('emb').innerHTML)document.getElementById('emb').innerHTML=embed(v)});
+ document.getElementById('cp').onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(v.url);document.getElementById('cp').textContent='Copied'}})();
+</script></body></html>

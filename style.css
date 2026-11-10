@@ -1,0 +1,27 @@
+
+:root{--bg:#f4f6fa;--card:#fff;--ink:#16202e;--mut:#5d6b80;--line:#e1e6ee;--brand:#1f3a5f;--acc:#2f7cf6;--ok:#1e8a4c;--warn:#b7791f;--okbg:#e6f4ec;--warnbg:#fdf3dc;--bar:#2f7cf6}
+@media (prefers-color-scheme:dark){:root{--bg:#0f141c;--card:#18202c;--ink:#e8edf5;--mut:#93a1b5;--line:#27313f;--brand:#8db4f0;--acc:#5b9bff;--ok:#5fcf8c;--warn:#f0c060;--okbg:#14301f;--warnbg:#3a2f12;--bar:#5b9bff}}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:23px;margin:0 0 4px;color:var(--brand);line-height:1.25}h2{font-size:17px;margin:26px 0 10px;color:var(--brand)}
+.sub{color:var(--mut);margin:0 0 14px}.note{background:var(--warnbg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:12px 0;font-size:13.5px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}.kpi,.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi b{display:block;font-size:23px}.kpi span{color:var(--mut);font-size:12.5px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);font-size:14px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{background:var(--bg);color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}.tw{overflow-x:auto;border-radius:12px}
+.tag{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}.tag.ok{background:var(--okbg);color:var(--ok);border-color:transparent}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 12px}select{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);min-height:40px;max-width:100%}
+.bars .row{display:grid;grid-template-columns:minmax(150px,280px) 1fr 74px;gap:10px;align-items:center;margin:7px 0;font-size:13.5px}
+.bars .track{background:var(--line);border-radius:6px;height:14px;overflow:hidden}.bars .fill{background:var(--bar);height:100%}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}.vc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.vc h3{font-size:14.5px;margin:0;line-height:1.35}.vc .meta{color:var(--mut);font-size:12.5px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}.stats div{background:var(--bg);border-radius:8px;padding:6px 2px}.stats b{display:block;font-size:14px}.stats span{font-size:11px;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}
+.na{color:var(--mut)}.btn{display:inline-flex;align-items:center;justify-content:center;background:var(--acc);color:#fff;text-decoration:none;padding:10px 16px;border-radius:9px;font-weight:600;border:0;font:inherit;font-weight:600;cursor:pointer;min-height:42px}
+.btn.ghost{background:transparent;color:var(--acc);border:1px solid var(--acc)}.btns{display:flex;gap:8px;flex-wrap:wrap}
+dl{display:grid;grid-template-columns:150px 1fr;gap:6px 12px;margin:0}dt{color:var(--mut)}dd{margin:0;word-break:break-word}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:12px 0}summary{cursor:pointer;font-weight:600;color:var(--brand)}details p,details li{font-size:14px}
+.embed{display:flex;justify-content:center;margin:14px 0}.embed iframe{border:0;max-width:100%;border-radius:12px;background:var(--card)}
+svg.spark{width:100%;height:60px}
+@media print{.filters,.btns{display:none}body{background:#fff}}
+@media (max-width:600px){.bars .row{grid-template-columns:1fr 64px}.bars .row .track{grid-column:1/-1;order:3}dl{grid-template-columns:1fr}.stats b{font-size:13px}h1{font-size:20px}}
