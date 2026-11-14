@@ -1,0 +1,75 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analysis | Influencer Impact</title><link rel="stylesheet" href="style.css?v=4"><style>.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.hd{display:grid;gap:10px;margin:0;padding:0;list-style:none}.hd li{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:12px;padding:12px 16px;font-size:14.5px;line-height:1.5}.up{color:#1a8a4a;font-weight:700}.note{background:var(--pill);border-radius:12px;padding:12px 16px;font-size:13.5px;color:var(--mut);margin-top:12px}td.n,th.n{text-align:right}</style></head><body>
+<header class="top"><div class="in"><a class="logo" href="./">SC<i>O</i>RP</a><span class="sep"></span><span class="pn">Influencer Impact</span><a class="btn ghost sm" href="index.html">Dashboard</a></div></header>
+<div class="wrap">
+<section class="hero"><span class="eyebrow">Analysis</span><h1>What is <em>working</em></h1>
+<p class="sub">Built from the public figures on the dashboard. Last collected <b id="upd"></b>. Facebook, Instagram and X show no public counts, so they cannot be compared.</p></section>
+<div class="filters"><div class="frow"><span class="flab">Event</span><span id="fe" class="frow" style="overflow:visible"></span></div></div>
+<h2>Headlines</h2><ul class="hd" id="hl"></ul>
+<div class="kpis" id="kpis"></div>
+<h2>Growth since the first reading</h2><p class="h2s">Views then and now, for videos read more than once.</p><div class="tw"><table id="gr"></table></div>
+<h2>Top performing videos</h2><div class="two"><div><p class="h2s">Most views</p><div class="card bars" id="tv"></div></div><div><p class="h2s">Best engagement (likes + comments + shares per view, 500+ views)</p><div class="card bars" id="te"></div></div></div>
+<h2>Which platform is most useful</h2><p class="h2s">Only platforms with public counts can be compared.</p><div class="tw"><table id="pl"></table></div>
+<h2>Which creator is most useful</h2><p class="h2s">Reach per follower shows who gets seen beyond their own audience.</p><div class="tw"><table id="cr"></table></div>
+<h2>Events side by side</h2><div class="tw"><table id="ev"></table></div>
+<h2>Comments and response</h2><div class="tw"><table id="cm"></table></div>
+<p class="note">Comment text is not shown here: reading it needs a TikTok or Facebook login, which this project does not use. As a stand-in, "likes per 100 views" and "comments per 1,000 views" show how strongly people responded. Cost is not tracked, so "useful" means reach and response, not return on spend.</p>
+<p class="foot">Views are platform play counts. Engagement = (likes + comments + shares) &divide; views. N/A = not shown publicly.</p>
+</div>
+<script src="data/embedded.js"></script><script>
+function parseCSV(t){const r=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);r.push(row);row=[];f=''}else f+=c}if(f!==''||row.length){row.push(f);r.push(row)}const h=r.shift();return r.filter(x=>x.length>1).map(x=>Object.fromEntries(h.map((k,i)=>[k,x[i]])))}
+
+async function load(n){try{const r=await fetch('data/'+n+'.csv?'+Date.now());if(!r.ok)throw 0;return parseCSV(await r.text())}catch(e){return parseCSV(window.EMBEDDED[n])}}
+const $=s=>document.querySelector(s),num=x=>x===''||x==null?null:Number(x),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const f=x=>x==null||isNaN(x)?'<span class="na">N/A</span>':Math.round(x).toLocaleString('en-GB');
+const pc=x=>x==null||!isFinite(x)?'<span class="na">N/A</span>':x.toFixed(2)+'%';
+const d1=x=>x==null||!isFinite(x)?'<span class="na">N/A</span>':x.toFixed(1);
+const sum=a=>a.reduce((s,x)=>s+x,0);
+let VS=[],INF={},EV='All';
+function rows(t){return t}
+function shortName(v){return v.influencer+' ('+(v.caption||'').slice(0,34)+')'}
+function bars(el,items,fmt){const mx=Math.max(...items.map(i=>i.val),1);$(el).innerHTML=items.length?items.map(i=>`<div class="row"><a href="video.html?id=${encodeURIComponent(i.slug)}">${esc(i.label)}</a><div class="track"><div class="fill" style="width:${Math.max(2,i.val/mx*100)}%"></div></div><b>${fmt(i.val)}</b></div>`).join(''):'<p class="empty">Not enough data</p>'}
+function render(){
+ const vs=VS.filter(v=>EV=='All'||v.event==EV), pub=vs.filter(v=>v.latest);
+ const tv=sum(pub.map(v=>v.latest.views)), tl=sum(pub.map(v=>v.latest.likes||0)), tc=sum(pub.map(v=>v.latest.comments||0)), ts=sum(pub.map(v=>v.latest.shares||0));
+ const gr=pub.filter(v=>v.first&&v.first!==v.latest&&v.first.views!=null).map(v=>({v,a:v.first.views,b:v.latest.views,g:v.latest.views-v.first.views})).filter(x=>x.g>0).sort((a,b)=>b.g-a.g);
+ const ga=sum(gr.map(x=>x.a)),gb=sum(gr.map(x=>x.b));
+ const eng=pub.length?(tl+tc+ts)/tv*100:null;
+ // platforms
+ const plats={};vs.forEach(v=>{(plats[v.platform]=plats[v.platform]||[]).push(v)});
+ const prow=Object.entries(plats).map(([p,a])=>{const w=a.filter(v=>v.latest);const t=sum(w.map(v=>v.latest.views));const e=sum(w.map(v=>(v.latest.likes||0)+(v.latest.comments||0)+(v.latest.shares||0)));return{p,n:a.length,w:w.length,t,avg:w.length?t/w.length:null,eng:t?e/t*100:null}}).sort((a,b)=>b.t-a.t);
+ // creators
+ const cs={};vs.forEach(v=>{(cs[v.influencer]=cs[v.influencer]||[]).push(v)});
+ const crow=Object.entries(cs).map(([n,a])=>{const w=a.filter(v=>v.latest);const t=sum(w.map(v=>v.latest.views));const e=sum(w.map(v=>(v.latest.likes||0)+(v.latest.comments||0)+(v.latest.shares||0)));const fl=INF[n]?num(INF[n].followers):null;return{n,c:INF[n]?INF[n].country:'',n_v:a.length,w:w.length,t,avg:w.length?t/w.length:null,fl,rpf:fl&&w.length?(t/w.length)/fl:null,eng:t?e/t*100:null}}).sort((a,b)=>b.t-a.t);
+ // headlines
+ const H=[];
+ const topv=[...pub].sort((a,b)=>b.latest.views-a.latest.views)[0];
+ if(topv)H.push(`<b>Top video:</b> ${esc(topv.influencer)} on ${esc(topv.platform)} with ${topv.latest.views.toLocaleString('en-GB')} views (${(topv.latest.views/tv*100).toFixed(0)}% of all views).`);
+ if(gr.length)H.push(`<b>Growth:</b> ${gr.length} videos grew from ${ga.toLocaleString('en-GB')} to ${gb.toLocaleString('en-GB')} views (<span class="up">+${((gb-ga)/ga*100).toFixed(0)}%</span>). Biggest gain: ${esc(gr[0].v.influencer)}, +${gr[0].g.toLocaleString('en-GB')}.`);
+ const bp=prow.filter(r=>r.t>0)[0];if(bp)H.push(`<b>Best platform:</b> ${esc(bp.p)}, ${bp.t.toLocaleString('en-GB')} public views across ${bp.w} videos${prow.length>1?' (others have no public counts)':''}.`);
+ const bc=crow.filter(r=>r.t>0)[0];if(bc)H.push(`<b>Most views from one creator:</b> ${esc(bc.n)}, ${bc.t.toLocaleString('en-GB')} views across ${bc.w} videos.`);
+ const br=crow.filter(r=>r.rpf!=null&&r.w).sort((a,b)=>b.rpf-a.rpf)[0];if(br)H.push(`<b>Best reach for their size:</b> ${esc(br.n)}, an average video is seen by ${(br.rpf*100).toFixed(0)}% of their ${br.fl.toLocaleString('en-GB')} followers.`);
+ const noc=vs.length-pub.length;if(noc)H.push(`<b>Not counted:</b> ${noc} of ${vs.length} videos have no public view count (Facebook, Instagram, X or hidden), so real reach is higher than shown.`);
+ $('#hl').innerHTML=H.map(x=>`<li>${x}</li>`).join('');
+ $('#kpis').innerHTML=[['Videos',vs.length],['With public counts',pub.length],['Total views',tv],['Likes',tl],['Comments',tc],['Shares',ts]].map(([l,v],i)=>`<div class="kpi${i==2?' hl':''}"><b>${f(v)}</b><span>${l}</span></div>`).join('')+`<div class="kpi"><b>${pc(eng)}</b><span>Engagement</span></div>`;
+ $('#gr').innerHTML='<tr><th>Video</th><th class="n">First reading</th><th class="n">Latest</th><th class="n">Gain</th><th class="n">Growth</th></tr>'+(gr.length?gr.map(x=>`<tr><td><a href="video.html?id=${encodeURIComponent(x.v.slug)}">${esc(shortName(x.v))}</a></td><td class="n">${f(x.a)}</td><td class="n">${f(x.b)}</td><td class="n up">+${f(x.g)}</td><td class="n">+${(x.g/x.a*100).toFixed(0)}%</td></tr>`).join('')+`<tr><td><b>Total</b></td><td class="n"><b>${f(ga)}</b></td><td class="n"><b>${f(gb)}</b></td><td class="n up"><b>+${f(gb-ga)}</b></td><td class="n"><b>+${ga?((gb-ga)/ga*100).toFixed(0):0}%</b></td></tr>`:'<tr><td colspan="5" class="empty">Each video needs two readings on different days. Growth shows after the next refresh.</td></tr>');
+ bars('#tv',[...pub].sort((a,b)=>b.latest.views-a.latest.views).slice(0,6).map(v=>({slug:v.slug,label:shortName(v),val:v.latest.views})),x=>x.toLocaleString('en-GB'));
+ bars('#te',pub.filter(v=>v.latest.views>=500).map(v=>({slug:v.slug,label:shortName(v),val:((v.latest.likes||0)+(v.latest.comments||0)+(v.latest.shares||0))/v.latest.views*100})).sort((a,b)=>b.val-a.val).slice(0,6),x=>x.toFixed(1)+'%');
+ $('#pl').innerHTML='<tr><th>Platform</th><th class="n">Videos</th><th class="n">With counts</th><th class="n">Total views</th><th class="n">Avg per video</th><th class="n">Engagement</th></tr>'+prow.map(r=>`<tr><td><b>${esc(r.p)}</b></td><td class="n">${r.n}</td><td class="n">${r.w}</td><td class="n">${r.w?f(r.t):'<span class="na">N/A</span>'}</td><td class="n">${f(r.avg)}</td><td class="n">${r.w?pc(r.eng):'<span class="na">N/A</span>'}</td></tr>`).join('');
+ $('#cr').innerHTML='<tr><th>Creator</th><th>Country</th><th class="n">Videos</th><th class="n">Total views</th><th class="n">Avg per video</th><th class="n">Followers</th><th class="n">Avg video seen by % of followers</th><th class="n">Engagement</th></tr>'+crow.map(r=>`<tr><td><b>${esc(r.n)}</b></td><td>${esc(r.c||'')||'<span class="na">N/A</span>'}</td><td class="n">${r.n_v}</td><td class="n">${r.w?f(r.t):'<span class="na">N/A</span>'}</td><td class="n">${f(r.avg)}</td><td class="n">${f(r.fl)}</td><td class="n">${r.rpf==null?'<span class="na">N/A</span>':(r.rpf*100).toFixed(0)+'%'}</td><td class="n">${r.w?pc(r.eng):'<span class="na">N/A</span>'}</td></tr>`).join('');
+ const evs={};VS.forEach(v=>{(evs[v.event]=evs[v.event]||[]).push(v)});
+ $('#ev').innerHTML='<tr><th>Event</th><th class="n">Videos</th><th class="n">With counts</th><th class="n">Total views</th><th class="n">Avg per video</th><th class="n">Engagement</th></tr>'+['Birmingham','Manchester','London'].filter(e=>evs[e]).map(e=>{const a=evs[e],w=a.filter(v=>v.latest),t=sum(w.map(v=>v.latest.views)),x=sum(w.map(v=>(v.latest.likes||0)+(v.latest.comments||0)+(v.latest.shares||0)));return`<tr><td><b>${e}</b></td><td class="n">${a.length}</td><td class="n">${w.length}</td><td class="n">${f(t)}</td><td class="n">${f(w.length?t/w.length:null)}</td><td class="n">${t?pc(x/t*100):'<span class="na">N/A</span>'}</td></tr>`}).join('');
+ const cm=pub.filter(v=>v.latest.comments!=null).sort((a,b)=>b.latest.comments-a.latest.comments).slice(0,8);
+ $('#cm').innerHTML='<tr><th>Video</th><th class="n">Comments</th><th class="n">Comments per 1,000 views</th><th class="n">Likes per 100 views</th></tr>'+cm.map(v=>`<tr><td><a href="video.html?id=${encodeURIComponent(v.slug)}">${esc(shortName(v))}</a></td><td class="n">${f(v.latest.comments)}</td><td class="n">${d1(v.latest.comments/v.latest.views*1000)}</td><td class="n">${d1((v.latest.likes||0)/v.latest.views*100)}</td></tr>`).join('');
+}
+(async()=>{
+ const [v,h,i]=await Promise.all([load('videos'),load('history'),load('influencers')]);
+ rows(i).forEach(r=>INF[r.name]=r);
+ const hist={};rows(h).forEach(r=>{(hist[r.slug]=hist[r.slug]||[]).push({d:r.collected_at,views:num(r.views),likes:num(r.likes),comments:num(r.comments),shares:num(r.shares)})});
+ VS=rows(v).map(r=>{const a=(hist[r.slug]||[]).filter(x=>x.views!=null).sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:0);const all=(hist[r.slug]||[]).sort((x,y)=>x.d<y.d?-1:1);r.latest=a.length?a[a.length-1]:null;r.first=a.length>1&&a[0].d!=a[a.length-1].d?a[0]:null;r.collected=all.length?all[all.length-1].d:'';return r});
+ const d=VS.map(x=>x.collected).filter(Boolean).sort().pop();$('#upd').textContent=d?new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'N/A';
+ const evl=['All','Birmingham','Manchester','London'];
+ const draw=()=>{$('#fe').innerHTML=evl.map(e=>`<button class="chip${e==EV?' on':''}" data-e="${e}">${e}</button>`).join('');document.querySelectorAll('#fe .chip').forEach(b=>b.onclick=()=>{EV=b.dataset.e;draw();render()})};
+ draw();render();
+})();
+</script></body></html>
