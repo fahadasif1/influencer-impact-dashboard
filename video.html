@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Video details</title><link rel="stylesheet" href="style.css?v=3"></head><body>
+<title>Video details</title><link rel="stylesheet" href="style.css?v=4"></head><body>
 <header class="top"><div class="in"><a class="logo" href="./">SC<i>O</i>RP</a><span class="sep"></span><span class="pn">Influencer Impact</span><a class="btn sm" href="index.html">&larr; Dashboard</a></div></header><div class="wrap">
 <p style="margin:18px 0 0"><a href="index.html">&larr; Back to dashboard</a></p><div id="page"><p class="na">Loading…</p></div></div>
 <script src="data/embedded.js"></script><script>
@@ -28,7 +28,7 @@ function copyText(t,btn){const done=ok=>{btn.textContent=ok?'Copied':'Press and 
  <div class="grid">${cell('Views',v.views)}${cell('Likes',v.likes)}${cell('Comments',v.comments)}${cell('Shares',v.shares)}${cell('Saves',v.saves)}${cell('Unique reach',v.reach)}<div class="kpi"><b>${p(v.eng)}</b><span>Engagement rate</span></div></div>
  <h2>Views over time</h2><div class="card">${spark(v.hist)}</div>
  <h2>Preview</h2><details><summary>Show the post preview (loads from ${esc(v.platform)})</summary><div class="embed" id="emb"></div></details>
- <h2>Details</h2><div class="card"><dl><dt>Platform</dt><dd>${esc(v.platform)}</dd><dt>Posted</dt><dd>${esc(v.posted)}</dd><dt>Link</dt><dd><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url)}</a></dd><dt>Last collected</dt><dd>${esc(v.collected)} from the ${esc(v.source)}</dd><dt>Verification</dt><dd>Public figures read from the page; not checked against the creator's own analytics</dd>${v.note?`<dt>Note</dt><dd>${esc(v.note)}</dd>`:''}</dl></div>
+ <h2>Details</h2><div class="card"><dl><dt>Event</dt><dd>${esc(v.event||"N/A")}</dd><dt>Platform</dt><dd>${esc(v.platform)}</dd><dt>Posted</dt><dd>${esc(v.posted)}</dd><dt>Link</dt><dd><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url)}</a></dd><dt>Last collected</dt><dd>${esc(v.collected)} from the ${esc(v.source)}</dd><dt>Verification</dt><dd>Public figures read from the page; not checked against the creator's own analytics</dd>${v.note?`<dt>Note</dt><dd>${esc(v.note)}</dd>`:''}</dl></div>
  <p class="na" style="margin-top:18px;font-size:13px">Engagement rate = (likes + comments + shares) &divide; views. N/A = not shown publicly.</p>`;
  document.querySelector('details').addEventListener('toggle',e=>{if(e.target.open&&!document.getElementById('emb').innerHTML)document.getElementById('emb').innerHTML=embed(v)});
  document.getElementById('cp').onclick=()=>copyText(v.url,document.getElementById('cp'))})();
