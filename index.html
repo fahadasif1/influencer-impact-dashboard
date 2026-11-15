@@ -3,7 +3,7 @@
 <header class="top"><div class="in"><a class="logo" href="./">SC<i>O</i>RP</a><span class="sep"></span><span class="pn">Influencer Impact</span><a class="btn ghost sm" href="analysis.html">Analysis</a><a class="btn sm" href="https://docs.google.com/forms/d/e/1FAIpQLSfrYNntr-nBe1pw6hM6SDJ0h1Y4X-rVq7WPxCaLo4X-ch5Dkg/viewform" target="_blank" rel="noopener">+ Add a link</a></div></header>
 <div class="wrap">
 <section class="hero"><span class="eyebrow">Scholarship events</span><h1>Influencer Reach &amp; <em>Impact</em></h1>
-<p class="sub">Video figures last collected <b id="upd"></b>; follower counts as of 14 Nov 2026. Missed a post? Use <b>+ Add a link</b>; the team reviews it before it appears here.</p></section>
+<p class="sub">Video figures last collected <b id="upd"></b>; follower counts as of <b id="upd2"></b>. Missed a post? Use <b>+ Add a link</b>; the team reviews it before it appears here.</p></section>
 
 <div class="filters" id="filters">
 <div class="frow"><span class="flab">Event</span><span id="fe" class="frow" style="overflow:visible"></span></div>
@@ -91,5 +91,5 @@ document.addEventListener('click',e=>{const a=e.target.closest('[data-v]');if(a)
  const sh=e.target.closest('th.s');if(sh){const k=sh.dataset.s;if(S.sort===k)S.dir=-S.dir;else{S.sort=k;S.dir=k==='name'||k==='country'?1:-1}render();return}
  if(e.target.id==='rs'){S.e='';S.c='';S.p='';S.q='';$('#fq').value='';render()}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeV()});
-(async()=>{M=await model();{const d=M.vs.map(v=>v.collected).filter(Boolean).sort().pop();$('#upd').textContent=d?new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):(window.UPDATED||'')}$('#fq').addEventListener('input',e=>{S.q=e.target.value.trim();render()});render();if(location.hash.length>1)openV(location.hash.slice(1))})();
+(async()=>{M=await model();{const d=M.vs.map(v=>v.collected).filter(Boolean).sort().pop();{const e=$('#upd2');if(e)e.textContent=d?new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}$('#upd').textContent=d?new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):(window.UPDATED||'')}$('#fq').addEventListener('input',e=>{S.q=e.target.value.trim();render()});render();if(location.hash.length>1)openV(location.hash.slice(1))})();
 </script></body></html>
